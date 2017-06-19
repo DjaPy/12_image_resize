@@ -39,33 +39,46 @@ def check_of_proportionality(width, height, size_image):
         return False
 
 
-def resize_image(output,
-                 size_image,
-                 width,
-                 height,
-                 original_image):
-    if width or height:
-        image_resize = original_image.resize((width, height))
+def resize_image(user_settings, size_image, original_image):
+    if user_settings.width or user_settings.height:
+        image_resize = original_image.resize((user_settings.width,
+                                              user_settings.height))
     else:
-        image_resize = original_image.resize((int(size_image[0]*scale), int(size_image[1]*scale)))
-
-    image_resize.save(output + '.jpg')
+        image_resize = original_image.resize((int(size_image[0]*scale),
+                                              int(size_image[1]*scale)))
     return image_resize
 
 
+def get_finish_image_size(image_resize):
+    finish_size = image_resize.size
+    return finish_size
+
+
+def get_filepath_to_save(user_settings, finish_size):
+    if user_settings.output:
+        return user_settings.output
+    else:
+        width = finish_size[0]
+        height = finish_size[1]
+        filepath, image_name = os.path.splitext(user_settings.file)
+        output = '{}__{}x{}{}'.format(filepath, width, height,
+                                      image_name)
+        return output
+
+
+def save_resize_image(image_resize, output):
+    image_resize.save(output)
+
+
 if __name__ == '__main__':
-    args = get_parser_of_command_line()
-    path_to_original = args.file
+    user_settings = get_parser_of_command_line()
+    path_to_original = user_settings.file
     size_image, original_image = get_original_image_size(path_to_original)
     print(size_image[0], size_image[1])
-    width = args.width
-    height = args.height
-    scale = args.scale
-    output = args.output
-    if output is None:
-        output = os.path
-    print(get_original_image_size(path_to_original))
-    print(scale, height, width, output)
+    width = user_settings.width
+    height = user_settings.height
+    scale = user_settings.scale
+
     if scale and height and width:
         print('You entered conflicting data!')
         print('Select the scale or the width and the height!')
@@ -77,4 +90,7 @@ if __name__ == '__main__':
     elif height or width:
         width, height = get_proportional_size(size_image, width, height)
 
-    resize_image(output, size_image, height, width, original_image)
+    image_resize = resize_image(user_settings, size_image, original_image)
+    finish_size = get_finish_image_size(image_resize)
+    output = get_filepath_to_save(user_settings, finish_size)
+    save_resize_image(image_resize, output)
