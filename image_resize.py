@@ -24,11 +24,11 @@ def get_original_image_size(path_to_original):
     return size_image, original_image
 
 
-def get_proportional_size(size_image, width, height):
-    if height == None:
-        height = (width * size_image[1]) / size_image[0]
-    elif width == None:
-        width = (height * size_image[0]) / size_image[1]
+def get_proportional_size(user_settings, size_image):
+    if user_settings.height is None:
+        height = (user_settings.width * size_image[1]) / size_image[0]
+    elif user_settings.width is None:
+        width = (user_settings.height * size_image[0]) / size_image[1]
     return width, height
 
 
@@ -39,10 +39,9 @@ def check_of_proportionality(width, height, size_image):
         return False
 
 
-def resize_image(user_settings, size_image, original_image):
-    if user_settings.width or user_settings.height:
-        image_resize = original_image.resize((user_settings.width,
-                                              user_settings.height))
+def resize_image(width, height, scale, size_image, original_image):
+    if width and height:
+        image_resize = original_image.resize((width, height))
     else:
         image_resize = original_image.resize((int(size_image[0]*scale),
                                               int(size_image[1]*scale)))
@@ -70,11 +69,14 @@ def save_resize_image(image_resize, output):
     image_resize.save(output)
 
 
+def check_scale(scale):
+    print(scale * 5)
+
+
 if __name__ == '__main__':
     user_settings = get_parser_of_command_line()
     path_to_original = user_settings.file
     size_image, original_image = get_original_image_size(path_to_original)
-    print(size_image[0], size_image[1])
     width = user_settings.width
     height = user_settings.height
     scale = user_settings.scale
@@ -87,10 +89,11 @@ if __name__ == '__main__':
     elif height and width:
         if check_of_proportionality(width, height, size_image) is False:
             print("The width isn't proportional to the height")
-    elif height or width:
-        width, height = get_proportional_size(size_image, width, height)
+        width, height = get_proportional_size(user_settings, size_image)
 
-    image_resize = resize_image(user_settings, size_image, original_image)
+    check_scale(scale)
+
+    image_resize = resize_image(width, height, scale, size_image, original_image)
     finish_size = get_finish_image_size(image_resize)
     output = get_filepath_to_save(user_settings, finish_size)
     save_resize_image(image_resize, output)
