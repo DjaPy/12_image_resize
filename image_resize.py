@@ -1,6 +1,7 @@
 from PIL import Image
 from argparse import ArgumentParser
 import os
+import sys
 
 
 def get_parser_of_command_line():
@@ -31,67 +32,61 @@ def get_proportional_size(user_settings, size_image):
     elif user_settings.width is None:
         width = int((user_settings.height * size_image[0]) / size_image[1])
         height = int(user_settings.height)
+    else:
+        width = user_settings.width
+        height = user_settings.height
     return width, height
 
 
-def check_of_proportionality(width, height, size_image):
-    return bool(int(width)/int(height) == size_image[0]/size_image[1])
+def check_of_proportionality(user_settings, size_image):
+    return int(user_settings.width)/int(user_settings.height) == size_image[0]/size_image[1]
 
 
-
-def resize_image(width, height, scale, size_image, original_image,
-                 user_settings):
-    if width is None and height is None:
-        width = int(size_image[0]*scale)
-        height = int(size_image[1]*scale)
-    elif width is None or height is None:
+def resize_image(size_image, original_image, user_settings):
+    if user_settings.width is None and user_settings.height is None:
+        width = int(size_image[0] * user_settings.scale)
+        height = int(size_image[1] * user_settings.scale)
+    else:
         width, height = get_proportional_size(user_settings, size_image)
     image_resize = original_image.resize((width, height))
     return image_resize
 
 
-def check_for_validity(width, height, scale, size_image):
-    if scale and height and width:
+def check_for_validity(user_settings, size_image):
+    if user_settings.scale and (user_settings.height or user_settings.width):
         print('You entered conflicting data!')
         print('Select the scale or the width and the height!')
         print('Try again!')
-        exit()
-    elif width and height:
-        print(width, height)
-        if check_of_proportionality(width, height, size_image) is False:
+        return False
+    elif user_settings.width and user_settings.height:
+        if check_of_proportionality(user_settings, size_image) is False:
             print("The width isn't proportional to the height")
-    else:
-        print('проверка')
         return True
 
 
-def get_filepath_to_save(image_resize):
+def check_for_error():
+    if check_for_validity(user_settings, size_image) is False:
+        sys.exit()
+
+
+def get_filepath_to_save(image_resize, user_settings):
     finish_size = image_resize.size
-    width = finish_size[0]
-    height = finish_size[1]
+    width, height = finish_size[0], finish_size[1]
     filepath, image_name = os.path.splitext(user_settings.file)
-    output = '{}__{}x{}{}'.format(filepath, width, height,
-                                      image_name)
+    output = '{}__{}x{}{}'.format(filepath, width, height, image_name)
     return output
 
 
 def save_resize_image(image_resize, user_settings):
     output = user_settings.output
-    if user_settings.output is None:
-        output = get_filepath_to_save(image_resize)
+    if output is None:
+        output = get_filepath_to_save(image_resize, user_settings)
     image_resize.save(output)
 
 
 if __name__ == '__main__':
     user_settings = get_parser_of_command_line()
-    path_to_orig = user_settings.file
-    size_image, original_image = get_original_image_size(path_to_orig)
-    width = user_settings.width
-    height = user_settings.height
-    scale = user_settings.scale
-
-    if check_for_validity(width, height, scale, size_image) is True:
-        width, height = get_proportional_size(user_settings, size_image)
-    image_resize = resize_image(width, height, scale, size_image,
-                                original_image, user_settings)
+    size_image, original_image = get_original_image_size(user_settings.file)
+    check_for_error()
+    image_resize = resize_image(size_image, original_image, user_settings)
     save_resize_image(image_resize, user_settings)

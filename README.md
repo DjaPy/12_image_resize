@@ -39,9 +39,9 @@ res 400x400 resized image without `-o` is test__200x200.jpg by command
 Availiable combinations of size arguments:
 
 - `-s` - resize image by scale
-- `-i` - resize image only by width. Proportions will be saved.
-- `-h` - resize image only by height. Proportions will be saved.
-- `-w -h -s` - resize image by width and height and scale. You will get an error and text:
+- `-w` - resize image only by width. Proportions will be saved.
+- `-i` - resize image only by height. Proportions will be saved.
+- `-w -s` or `-i -s` - resize image by width and height and scale. You will get an error and text:
 ```
 You entered conflicting data!
 Select the scale or the width and the height!
