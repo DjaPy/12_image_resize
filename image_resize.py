@@ -54,18 +54,12 @@ def resize_image(size_image, original_image):
 
 def check_for_validity(size_image):
     if user_settings.scale and (user_settings.height or user_settings.width):
-        return to_stop_the_program()
+        raise ValueError('You entered conflicting data!'
+                         ' Select the scale or the width and the height!'
+                         ' Try again!')
     elif user_settings.width and user_settings.height:
         if not check_of_proportionality(size_image):
             print("The width isn't proportional to the height")
-        return True
-
-
-def to_stop_the_program():
-    print('You entered conflicting data!')
-    print('Select the scale or the width and the height!')
-    print('Program aborted!Try again!')
-    sys.exit(TypeError)
 
 
 def get_filepath_to_save(image_resize, path_to_file, output):
